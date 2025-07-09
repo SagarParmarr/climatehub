@@ -34,7 +34,7 @@
       <button
         @click="onSubmit"
         type="submit"
-        class="rounded-full px-6 py-3 font-semibold shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+        class="cursor-pointer rounded-full px-6 py-3 font-semibold shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-400"
         :class="
           isDark
             ? 'bg-cyan-800 text-cyan-100 hover:bg-cyan-700'

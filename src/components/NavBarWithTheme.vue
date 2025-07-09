@@ -19,10 +19,8 @@
           <transition name="fade" mode="out-in">
             <component
               :is="isDark ? MoonIcon : SunIcon"
-              :iconClass="[
-                'h-7 w-7',
-                isDark ? 'text-cyan-100' : 'text-yellow-400',
-              ]"
+              class="h-7 w-7"
+              :iconClass="isDark ? 'text-cyan-100' : 'text-yellow-400'"
               :color="isDark ? '#e0f7fa' : '#FFD600'"
               key="icon-mode"
             />
@@ -35,16 +33,12 @@
     <!-- Dark/Light Toggle Button -->
     <button
       @click="toggleDark"
-      :style="{
-        padding: '0.5rem 1rem',
-        borderRadius: '9999px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-        border: '1px solid',
-        background: isDark ? 'rgba(31,41,55,0.8)' : 'rgba(207,250,254,0.8)',
-        color: isDark ? '#fff' : '#0e7490',
-        borderColor: isDark ? '#374151' : '#67e8f9',
-        transition: 'all 0.2s',
-      }"
+      class="px-4 py-2 rounded-full shadow-md border transition-all duration-200 cursor-pointer"
+      :class="
+        isDark
+          ? 'bg-gray-800/80 text-white border-gray-700'
+          : 'bg-cyan-100/80 text-cyan-700 border-cyan-300'
+      "
     >
       {{ isDark ? "☀️ Light Mode" : "🌙 Dark Mode" }}
     </button>

@@ -1,14 +1,20 @@
 <script setup lang="ts">
 import { useRoute } from "vue-router";
-import axios from "axios";
 import { ref, onMounted, onUnmounted } from "vue";
 import { useWeatherStore } from "../stores/weather";
 import { storeToRefs } from "pinia";
+import router from "../router";
+import {
+  formatTime,
+  formatDay,
+  transformOneCallWeatherData,
+} from "../utils/formatters";
+import { fetchOneCallWeather } from "../api/weatherApi";
+import { uid } from "uid";
 
 const weatherStore = useWeatherStore();
 const { isDark } = storeToRefs(weatherStore);
 
-// --- Types for OpenWeatherMap One Call API (partial, extend as needed) ---
 interface WeatherCurrent {
   dt: number;
   sunrise: number;
@@ -66,66 +72,34 @@ interface WeatherData {
   daily: WeatherDaily[];
   currentTime?: number;
 }
-
 // --- End Types ---
 
 const route = useRoute();
 const city = route.params.city as string;
 const state = route.params.state as string;
-const apiKey = import.meta.env.VITE_WEATHER_API_KEY;
+const lat = route.query.lat as string;
+const lng = route.query.lng as string;
 
-const loading = ref(true);
+const loading = ref(false);
 const errorMsg = ref("");
 const weatherData = ref<WeatherData | null>(null);
 const currentTime = ref("");
 
-function formatTime(dt: number, offset: number, hourOnly = false) {
-  // dt is in seconds, offset is in seconds
-  const date = new Date((dt + offset) * 1000);
-  if (hourOnly) {
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  }
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
-
-function formatDay(dt: number, offset: number) {
-  const date = new Date((dt + offset) * 1000);
-  return date.toLocaleDateString([], {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-}
-
 const getWeatherData = async () => {
   try {
-    const lat = route.query.lat;
-    const lon = route.query.lng;
-    if (!lat || !lon) {
+    loading.value = true;
+    if (!lat || !lng) {
       errorMsg.value = "Latitude and longitude are required.";
-      loading.value = false;
       return;
     }
-    const response = await axios.get(
-      `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&appid=${apiKey}&units=metric`
-    );
-
-    if (!response.data || !response.data.current) {
+    // Use the modular API utility to fetch One Call weather data
+    let data = await fetchOneCallWeather(parseFloat(lat), parseFloat(lng));
+    if (!data || !data.current) {
       errorMsg.value = "Weather data not available.";
       return;
     }
-    // cal current date & time
-    const localOffset = new Date().getTimezoneOffset() * 60000;
-    const utc = response.data.current.dt * 1000 + localOffset;
-    response.data.currentTime = utc + 1000 * response.data.timezone_offset;
-
-    // cal hourly weather offset
-    response.data.hourly.forEach((hour: WeatherHourly) => {
-      const utc = hour.dt * 1000 + localOffset;
-      hour.currentTime = utc + 1000 * response.data.timezone_offset;
-    });
-
-    weatherData.value = response.data as WeatherData;
+    // Transform data for local use
+    weatherData.value = transformOneCallWeatherData(data);
   } catch (error) {
     errorMsg.value = "Error fetching weather data.";
     console.error("Error fetching weather data:", error);
@@ -147,16 +121,25 @@ const updateCurrentTime = () => {
 };
 
 const handleAddWeather = () => {
-  // You can replace this with routing, modal open, etc.
-  console.log("Add Weather button clicked!");
-  // Example: route to home page or search screen
-  // router.push('/')
+  try {
+    weatherStore.addCity({
+      id: uid(),
+      name: city,
+      state: state || "",
+      lat: parseFloat(lat),
+      lng: parseFloat(lng),
+    });
+    console.log("city added", weatherStore.savedCities);
+    router.push("/");
+  } catch (e) {
+    console.log(e);
+  }
 };
 
-let intervalForTimeUpdate!: number;
+let intervalForTimeUpdate: any;
 
-onMounted(() => {
-  getWeatherData();
+onMounted(async () => {
+  await getWeatherData();
   updateCurrentTime();
   intervalForTimeUpdate = setInterval(updateCurrentTime, 60000);
 });
@@ -195,7 +178,7 @@ onUnmounted(() => {
 
       <div class="mb-6 text-center">
         <button
-          class="px-5 py-2 rounded-xl font-semibold shadow-md transition-colors duration-300 border border-transparent text-sm sm:text-base"
+          class="cursor-pointer px-5 py-2 rounded-xl font-semibold shadow-md transition-colors duration-300 border border-transparent text-sm sm:text-base"
           :class="
             isDark
               ? 'bg-sky-800 hover:bg-sky-700 text-white'
