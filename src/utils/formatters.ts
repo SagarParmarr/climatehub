@@ -1,21 +1,17 @@
 // Utility functions for formatting date and time
 
-export function formatTime(
-  dt: number,
-  offset: number,
-  hourOnly = false
-): string {
+export function formatTime(dt: number, offset: number): string {
   // dt and offset are in seconds
   const date = new Date((dt + offset) * 1000);
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
 export function formatDay(dt: number, offset: number): string {
   const date = new Date((dt + offset) * 1000);
   return date.toLocaleDateString([], {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
   });
 }
 

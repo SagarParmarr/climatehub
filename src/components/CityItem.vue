@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { defineProps } from "vue";
-import { storeToRefs } from "pinia";
-import { useWeatherStore } from "../stores/weather";
-import router from "../router";
+import { storeToRefs } from 'pinia';
+import { useWeatherStore } from '../stores/weather';
+import router from '../router';
 
 const props = defineProps({
   cityData: {
@@ -15,7 +14,7 @@ const { isDark } = storeToRefs(weatherStore);
 
 const handleCityClick = () => {
   router.push({
-    name: "CityView",
+    name: 'CityView',
     params: {
       city: props.cityData.name,
       state: props.cityData.state,

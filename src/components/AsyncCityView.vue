@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { useRoute } from "vue-router";
-import { ref, onMounted, onUnmounted } from "vue";
-import { useWeatherStore } from "../stores/weather";
-import { storeToRefs } from "pinia";
-import router from "../router";
+import { useRoute } from 'vue-router';
+import { ref, onMounted, onUnmounted } from 'vue';
+import { useWeatherStore } from '../stores/weather';
+import { storeToRefs } from 'pinia';
+import router from '../router';
 import {
   formatTime,
   formatDay,
   transformOneCallWeatherData,
-} from "../utils/formatters";
-import { fetchOneCallWeather } from "../api/weatherApi";
-import { uid } from "uid";
+} from '../utils/formatters';
+import { fetchOneCallWeather } from '../api/weatherApi';
+import { uid } from 'uid';
 
 const weatherStore = useWeatherStore();
 const { isDark } = storeToRefs(weatherStore);
@@ -81,41 +81,40 @@ const lat = route.query.lat as string;
 const lng = route.query.lng as string;
 
 const loading = ref(false);
-const errorMsg = ref("");
+const errorMsg = ref('');
 const weatherData = ref<WeatherData | null>(null);
-const currentTime = ref("");
-
-const getWeatherData = async () => {
+const currentTime = ref('');
+async function getWeatherData() {
   try {
     loading.value = true;
     if (!lat || !lng) {
-      errorMsg.value = "Latitude and longitude are required.";
+      errorMsg.value = 'Latitude and longitude are required.';
       return;
     }
     // Use the modular API utility to fetch One Call weather data
     let data = await fetchOneCallWeather(parseFloat(lat), parseFloat(lng));
     if (!data || !data.current) {
-      errorMsg.value = "Weather data not available.";
+      errorMsg.value = 'Weather data not available.';
       return;
     }
     // Transform data for local use
     weatherData.value = transformOneCallWeatherData(data);
   } catch (error) {
-    errorMsg.value = "Error fetching weather data.";
-    console.error("Error fetching weather data:", error);
+    errorMsg.value = 'Error fetching weather data.';
+    console.error('Error fetching weather data:', error);
   } finally {
     loading.value = false;
   }
-};
+}
 
 const updateCurrentTime = () => {
   const now = new Date();
-  currentTime.value = now.toLocaleString("en-IN", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
+  currentTime.value = now.toLocaleString('en-IN', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
     hour12: true,
   });
 };
@@ -125,12 +124,12 @@ const handleAddWeather = () => {
     weatherStore.addCity({
       id: uid(),
       name: city,
-      state: state || "",
+      state: state || '',
       lat: parseFloat(lat),
       lng: parseFloat(lng),
     });
-    console.log("city added", weatherStore.savedCities);
-    router.push("/");
+    console.log('city added', weatherStore.savedCities);
+    router.push('/');
   } catch (e) {
     console.log(e);
   }
@@ -205,7 +204,10 @@ onUnmounted(() => {
         {{ errorMsg }}
       </div>
 
-      <div v-else-if="weatherData" class="w-full flex flex-col items-center">
+      <div
+        v-else-if="weatherData"
+        class="w-full flex flex-col items-center"
+      >
         <!-- Current Weather (centered and bigger) -->
         <div
           class="flex flex-col items-center justify-center w-full max-w-xl bg-white/80 dark:bg-gray-900/80 rounded-3xl shadow-2xl p-10 mb-8"
@@ -293,7 +295,7 @@ onUnmounted(() => {
           </h2>
           <div class="hourlyContainer flex overflow-x-auto gap-4 pb-2">
             <div
-              v-for="(hour, _) in weatherData.hourly.slice(0, 12)"
+              v-for="hour in weatherData.hourly.slice(0, 12)"
               :key="hour.dt"
               class="flex flex-col items-center min-w-[70px] rounded-xl p-2 shadow"
               :style="{
@@ -304,7 +306,7 @@ onUnmounted(() => {
               }"
             >
               <div class="text-xs mb-1 font-semibold">
-                {{ formatTime(hour.dt, weatherData.timezone_offset, true) }}
+                {{ formatTime(hour.dt, weatherData.timezone_offset) }}
               </div>
               <img
                 :src="`https://openweathermap.org/img/wn/${hour.weather[0].icon}@2x.png`"
@@ -338,7 +340,7 @@ onUnmounted(() => {
           </h2>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div
-              v-for="(day, _) in weatherData.daily.slice(0, 7)"
+              v-for="day in weatherData.daily.slice(0, 7)"
               :key="day.dt"
               class="flex flex-col items-center rounded-xl p-4 shadow"
               :style="{
