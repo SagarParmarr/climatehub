@@ -27,14 +27,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-# Remove .env from Git tracking (but keep it locally)
-git rm --cached .env
-git rm --cached .env.local
-
-# Commit this change
-git add .gitignore
-git commit -m "Remove .env files from tracking"
-
-# Push to origin
-git push origin main
